@@ -1,0 +1,19 @@
+name: mach-ext
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8
+  - cudatoolkit=11.2
+  - cudnn=8.1
+  - pip:
+    - numpy
+    - pandas
+    - tensorflow==2.7
+    - scikit-learn==1.1
+    - wildboar==1.1.0
+    - matplotlib==3.4.2
+    - stumpy==1.9.2
+    - fastdtw==0.3.4
+    - jupyter==1.0.0
+prefix: /home/dsv/zhwa9764/miniconda3/envs/mach-ext

@@ -1,0 +1,16 @@
+{
+  "dataset_name": "Epilepsy",
+  "n_train_samples": 220,
+  "n_test_samples": 55,
+  "n_classes": 4,
+  "n_channels": 3,
+  "batch_size": 32,
+  "device": "cuda",
+  "classifier_trials": 30,
+  "final_clf_epochs": 80,
+  "n_eval_samples": 55,
+  "test_size": 0.2,
+  "seed": 42,
+  "timestamp": "2025-11-10T04:14:50.603585",
+  "experiment_name": "Epilepsy_optuna"
+}

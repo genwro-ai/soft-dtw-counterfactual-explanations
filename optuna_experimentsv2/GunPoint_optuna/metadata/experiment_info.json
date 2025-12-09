@@ -1,0 +1,16 @@
+{
+  "dataset_name": "GunPoint",
+  "n_train_samples": 160,
+  "n_test_samples": 40,
+  "n_classes": 2,
+  "n_channels": 1,
+  "batch_size": 32,
+  "device": "cuda",
+  "classifier_trials": 30,
+  "final_clf_epochs": 80,
+  "n_eval_samples": 40,
+  "test_size": 0.2,
+  "seed": 42,
+  "timestamp": "2025-11-09T22:11:23.633581",
+  "experiment_name": "GunPoint_optuna"
+}

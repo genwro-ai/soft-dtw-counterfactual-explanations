@@ -1,0 +1,16 @@
+{
+  "dataset_name": "Cricket",
+  "n_train_samples": 144,
+  "n_test_samples": 36,
+  "n_classes": 12,
+  "n_channels": 6,
+  "batch_size": 32,
+  "device": "cuda",
+  "classifier_trials": 30,
+  "final_clf_epochs": 80,
+  "n_eval_samples": 36,
+  "test_size": 0.2,
+  "seed": 42,
+  "timestamp": "2025-11-13T09:52:26.105206",
+  "experiment_name": "Cricket_optuna"
+}

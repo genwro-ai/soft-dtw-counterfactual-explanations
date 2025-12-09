@@ -1,0 +1,16 @@
+{
+  "dataset_name": "CBF",
+  "n_train_samples": 744,
+  "n_test_samples": 186,
+  "n_classes": 3,
+  "n_channels": 1,
+  "batch_size": 32,
+  "device": "cuda",
+  "classifier_trials": 30,
+  "final_clf_epochs": 80,
+  "n_eval_samples": 186,
+  "test_size": 0.2,
+  "seed": 42,
+  "timestamp": "2025-11-10T03:46:47.066546",
+  "experiment_name": "CBF_optuna"
+}

@@ -1,0 +1,16 @@
+{
+  "dataset_name": "ItalyPowerDemand",
+  "n_train_samples": 877,
+  "n_test_samples": 219,
+  "n_classes": 2,
+  "n_channels": 1,
+  "batch_size": 32,
+  "device": "cuda",
+  "classifier_trials": 30,
+  "final_clf_epochs": 80,
+  "n_eval_samples": 219,
+  "test_size": 0.2,
+  "seed": 42,
+  "timestamp": "2025-11-10T03:11:04.134992",
+  "experiment_name": "ItalyPowerDemand_optuna"
+}

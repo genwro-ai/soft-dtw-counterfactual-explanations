@@ -1,0 +1,16 @@
+{
+  "dataset_name": "TwoLeadECG",
+  "n_train_samples": 930,
+  "n_test_samples": 232,
+  "n_classes": 2,
+  "n_channels": 1,
+  "batch_size": 32,
+  "device": "cuda",
+  "classifier_trials": 30,
+  "final_clf_epochs": 80,
+  "n_eval_samples": 232,
+  "test_size": 0.2,
+  "seed": 42,
+  "timestamp": "2025-11-09T22:01:00.877921",
+  "experiment_name": "TwoLeadECG_optuna"
+}

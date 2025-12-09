@@ -1,0 +1,69 @@
+{
+  "timestamp": "2025-11-13T09:52:26.105322",
+  "system_info": {
+    "platform": "Linux-5.15.0-153-generic-x86_64-with-glibc2.35",
+    "python_version": "3.12.11",
+    "pytorch_version": "2.9.0+cu128",
+    "cuda_available": true,
+    "cuda_version": "12.8",
+    "device_name": "NVIDIA GeForce RTX 4090"
+  },
+  "best_classifier_params": {
+    "dropout": 0.2712126543581029,
+    "lr": 0.0014782699116348118,
+    "weight_decay": 0.0008700045210306797,
+    "batch_norm": false
+  },
+  "best_solver_config": {
+    "steps": 500,
+    "lr": 0.001,
+    "lambda_proximity": 1.0,
+    "lambda_sparsity": 1.0,
+    "lambda_validity": 10.0,
+    "lambda_fourier": 0.0,
+    "k_neighbors": 10,
+    "dtw_gamma": 0.1,
+    "dtw_normalize": true,
+    "p_target_min": 0.55,
+    "valid_objective": "hinge",
+    "weight_decay": 0.0,
+    "verbose": false,
+    "print_every": 50
+  },
+  "classifier_training": {
+    "best_val_loss": 0.029682327682773273,
+    "best_val_acc": 1.0,
+    "best_test_acc": 1.0,
+    "epochs_trained": 80
+  },
+  "final_evaluation": {
+    "n_samples": 36,
+    "validity": 1.0,
+    "proximity_l2": 7.24233341217041,
+    "sparsity_l1": 475.8990783691406,
+    "loss_proximity": 0.007381278866281112,
+    "loss_sparsity": 0.06625666676296128,
+    "loss_validity": 0.0,
+    "loss_plausibility": 12.208856264750162,
+    "outlier_factor_all": 0.9722222222222222,
+    "outlier_factor_valid": 0.9722222222222222
+  },
+  "timing": {
+    "data_preparation": {
+      "name": "Data preparation",
+      "elapsed_seconds": 0.1425924301147461
+    },
+    "classifier_loading": {
+      "name": "Classifier loading",
+      "elapsed_seconds": 0.002832174301147461
+    },
+    "neighbor_precomputation": {
+      "name": "Neighbor precomputation (skipped - sequential_cf)",
+      "elapsed_seconds": 0.0
+    },
+    "counterfactual_generation": {
+      "name": "Counterfactual generation (sequential)",
+      "elapsed_seconds": 40707.66282248497
+    }
+  }
+}

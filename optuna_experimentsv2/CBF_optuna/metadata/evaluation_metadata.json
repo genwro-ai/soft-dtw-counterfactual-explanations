@@ -1,0 +1,33 @@
+{
+  "solver_config": {
+    "steps": 300,
+    "lr": 0.001,
+    "lambda_proximity": 1.0,
+    "lambda_sparsity": 1.0,
+    "lambda_validity": 1.0,
+    "k_neighbors": 10,
+    "dtw_gamma": 1.0,
+    "dtw_normalize": true,
+    "p_target_min": 0.55,
+    "valid_objective": "hinge",
+    "weight_decay": 0.0,
+    "verbose": false,
+    "print_every": 50
+  },
+  "metrics": {
+    "dataset": "CBF",
+    "n_eval": 186,
+    "lambda_validity": 1.0,
+    "lambda_proximity": 1.0,
+    "lambda_sparsity": 1.0,
+    "k_neighbors": 10,
+    "dtw_gamma": 1.0,
+    "p_target_min": 0.55,
+    "validity": 1.0,
+    "proximity_l2": 0.960411012172699,
+    "sparsity_l1": 8.67834186553955,
+    "plausibility_dtw": 0.1876739263534546,
+    "outlier_factor_all": 1.0,
+    "outlier_factor_valid": 1.0
+  }
+}

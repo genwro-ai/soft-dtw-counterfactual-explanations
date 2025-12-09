@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-11-10T03:11:04.135100",
+  "system_info": {
+    "platform": "Linux-5.15.0-153-generic-x86_64-with-glibc2.35",
+    "python_version": "3.12.11",
+    "pytorch_version": "2.9.0+cu128",
+    "cuda_available": true,
+    "cuda_version": "12.8",
+    "device_name": "NVIDIA GeForce RTX 4090"
+  },
+  "classifier_optimization": {
+    "study_name": "ItalyPowerDemand_optuna_classifier",
+    "n_trials": 30,
+    "n_completed": 30,
+    "best_value": 0.9726027397260274,
+    "best_params": {
+      "dropout": 0.4390802826433145,
+      "lr": 0.0016586910588601493,
+      "weight_decay": 5.940610876669298e-05,
+      "batch_norm": true
+    },
+    "best_trial_number": 2,
+    "direction": "MAXIMIZE"
+  },
+  "best_classifier_params": {
+    "dropout": 0.4390802826433145,
+    "lr": 0.0016586910588601493,
+    "weight_decay": 5.940610876669298e-05,
+    "batch_norm": true
+  },
+  "best_solver_config": {
+    "steps": 500,
+    "lr": 0.001,
+    "lambda_proximity": 1.0,
+    "lambda_sparsity": 1.0,
+    "lambda_validity": 10.0,
+    "lambda_fourier": 0.0,
+    "k_neighbors": 10,
+    "dtw_gamma": 0.1,
+    "dtw_normalize": true,
+    "p_target_min": 0.55,
+    "valid_objective": "hinge",
+    "weight_decay": 0.0,
+    "verbose": false,
+    "print_every": 50
+  },
+  "classifier_training": {
+    "best_val_loss": 0.09750989651026791,
+    "best_val_acc": 0.9726027397260274,
+    "best_test_acc": 0.9726027397260274,
+    "epochs_trained": 32
+  },
+  "final_evaluation": {
+    "n_samples": 219,
+    "validity": 1.0,
+    "proximity_l2": 0.22166092693805695,
+    "sparsity_l1": 0.8692500591278076,
+    "loss_proximity": 0.00267429300583899,
+    "loss_sparsity": 0.03621705621480942,
+    "loss_validity": 1.952528236870421e-06,
+    "loss_plausibility": 0.0145286088809371
+  },
+  "timing": {
+    "data_preparation": {
+      "name": "Data preparation",
+      "elapsed_seconds": 0.004387378692626953
+    },
+    "classifier_optimization": {
+      "name": "Classifier optimization",
+      "elapsed_seconds": 26.383406162261963
+    },
+    "final_classifier_training": {
+      "name": "Final classifier training",
+      "elapsed_seconds": 0.7660489082336426
+    },
+    "neighbor_precomputation": {
+      "name": "Neighbor precomputation",
+      "elapsed_seconds": 4.670067548751831
+    },
+    "counterfactual_generation": {
+      "name": "Counterfactual generation",
+      "elapsed_seconds": 71.82286024093628
+    }
+  }
+}
