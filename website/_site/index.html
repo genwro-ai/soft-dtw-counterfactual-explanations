@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Marcin Kostrzewa">
+<meta name="author" content="Krzysztof Galus">
+<meta name="author" content="Maciej Zięba">
+
+<title>Towards Plausibility in Time Series Counterfactual Explanations</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="index_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap-b0a1c4a8308aeed7dc5dd600b2988e05.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<style>html{ scroll-behavior: smooth; }</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-full">
+
+<main class="content column-page" id="quarto-document-content">
+
+<header class="paper-hero">
+  <div class="hero-topbar">
+    <a class="hero-logo" href="https://genwro.ai" target="_blank" rel="noopener">
+      <img src="assets/genwro_logo_light.svg" alt="genwro.AI">
+    </a>
+  </div>
+
+  <div class="hero-content">
+    <h1 class="paper-title">Towards Plausibility in Time Series Counterfactual Explanations</h1>
+
+        <div class="paper-authors">
+      <span class="paper-author">Marcin Kostrzewa<sup>1</sup></span><span class="author-sep"> · </span><span class="paper-author">Krzysztof Galus<sup>1</sup></span><span class="author-sep"> · </span><span class="paper-author">Maciej Zięba<sup>1,2</sup></span>
+    </div>
+    
+            <div class="paper-affiliations">
+      <sup>1</sup> Wrocław University of Science and Technology &nbsp;·&nbsp; <sup>2</sup> Tooploox
+    </div>
+        
+    
+    <div class="paper-links">
+      
+      <a href="https://github.com/genwro-ai/soft-dtw-counterfactual-explantions" class="paper-btn paper-btn-secondary" target="_blank" rel="noopener">💻 Code</a>
+      
+      
+      
+      
+      
+      
+      
+    </div>
+  </div>
+</header>
+
+
+<div class="abstract">
+<p>We present a method for generating plausible counterfactual explanations (CFEs) for time series classification via gradient-based optimization in input space. Plausibility is enforced by aligning the generated CFE with <span class="math inline">\(k\)</span>-nearest neighbors from the target class using soft-DTW — a differentiable relaxation of dynamic time warping. The optimization objective balances validity, proximity, sparsity, and the novel soft-DTW plausibility term. Across eight datasets, our method achieves perfect or near-perfect validity while outperforming baselines in distributional alignment with the target class by up to an order of magnitude in DTW distance.</p>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Counterfactual explanations (CFEs) answer the question: <em>what minimal change to the input would alter the model’s prediction?</em> <span class="citation" data-cites="guidotti2024counterfactual Wachter2017CounterfactualEW">(<a href="#ref-guidotti2024counterfactual" role="doc-biblioref">Guidotti 2024</a>; <a href="#ref-Wachter2017CounterfactualEW" role="doc-biblioref">Wachter et al. 2017</a>)</span>. They are particularly valuable for time series classifiers used in healthcare <span class="citation" data-cites="Ullah2020ClassificationOA">(<a href="#ref-Ullah2020ClassificationOA" role="doc-biblioref">Ullah et al. 2020</a>)</span>, finance <span class="citation" data-cites="Jurgovsky2018SequenceCFA">(<a href="#ref-Jurgovsky2018SequenceCFA" role="doc-biblioref">Jurgovsky et al. 2018</a>)</span>, and industrial systems <span class="citation" data-cites="Markovic2023TimeseriesADA">(<a href="#ref-Markovic2023TimeseriesADA" role="doc-biblioref">Markovic et al. 2023</a>)</span>, where architectures such as ROCKET <span class="citation" data-cites="Dempster2020Rocket">(<a href="#ref-Dempster2020Rocket" role="doc-biblioref">Dempster et al. 2020</a>)</span> and InceptionTime <span class="citation" data-cites="Fawaz2019InceptionTime">(<a href="#ref-Fawaz2019InceptionTime" role="doc-biblioref">Fawaz et al. 2020</a>)</span> achieve high accuracy but remain opaque.</p>
+<p>A valid CFE for time series must do more than flip the classifier’s prediction — it must preserve realistic temporal structure. Existing methods enforce plausibility either indirectly through autoencoder reconstruction <span class="citation" data-cites="Wang2024 Wang2021">(<a href="#ref-Wang2024" role="doc-biblioref">Wang et al. 2024</a>, <a href="#ref-Wang2021" role="doc-biblioref">2021</a>)</span> or by substituting segments from real training examples <span class="citation" data-cites="Ates2021 Delaney2021Native">(<a href="#ref-Ates2021" role="doc-biblioref">Ates et al. 2021</a>; <a href="#ref-Delaney2021Native" role="doc-biblioref">Delaney et al. 2021</a>)</span>, neither of which provides an explicit, differentiable alignment with target-class temporal patterns.</p>
+<p>We address this by incorporating soft-DTW distance to target-class nearest neighbors directly into the optimization objective, enabling smooth gradient-based optimization that produces CFEs aligned with real data.</p>
+<p><strong>Contributions:</strong></p>
+<ul>
+<li>A gradient-based CFE method that enforces plausibility through soft-DTW alignment with target-class neighbors;</li>
+<li>Evaluation across eight UCR/UEA datasets on validity, proximity, sparsity, and plausibility (DTW distance and Isolation Forest Score);</li>
+<li>Qualitative analysis showing that competing methods produce adversarial-looking perturbations where ours preserves temporal realism.</li>
+</ul>
+</section>
+<section id="related-work" class="level2">
+<h2 class="anchored" data-anchor-id="related-work">Related Work</h2>
+<p>Substitution-based methods (CoMTE <span class="citation" data-cites="Ates2021">(<a href="#ref-Ates2021" role="doc-biblioref">Ates et al. 2021</a>)</span>, Native Guide <span class="citation" data-cites="Delaney2021Native">(<a href="#ref-Delaney2021Native" role="doc-biblioref">Delaney et al. 2021</a>)</span>) replace segments with training examples — plausible by construction, but constrained to observed patterns and prone to discontinuities. Evolutionary approaches (TSEvo <span class="citation" data-cites="Hllig2022">(<a href="#ref-Hllig2022" role="doc-biblioref">Höllig et al. 2022</a>)</span>, Sub-SpaCE <span class="citation" data-cites="Refoyo2023">(<a href="#ref-Refoyo2023" role="doc-biblioref">Refoyo and Luaces 2023</a>)</span>) search broadly but lack differentiability. Autoencoder-based methods (LatentCF++ <span class="citation" data-cites="Wang2021">(<a href="#ref-Wang2021" role="doc-biblioref">Wang et al. 2021</a>)</span>, Glacier <span class="citation" data-cites="Wang2024">(<a href="#ref-Wang2024" role="doc-biblioref">Wang et al. 2024</a>)</span>) optimize in latent space and use reconstruction error as a plausibility proxy. Saliency-guided methods (CELS <span class="citation" data-cites="li2023cels">(<a href="#ref-li2023cels" role="doc-biblioref">Li et al. 2023</a>)</span>, M-CELS <span class="citation" data-cites="li2024mcels">(<a href="#ref-li2024mcels" role="doc-biblioref">Li et al. 2024</a>)</span>) perturb the most influential time steps toward a nearest unlike neighbor. MASCOTS <span class="citation" data-cites="Pudowski2025">(<a href="#ref-Pudowski2025" role="doc-biblioref">Pudowski et al. 2025</a>)</span> operates in a symbolic feature space based on the BoRF representation <span class="citation" data-cites="Spinnato2024FastIA">(<a href="#ref-Spinnato2024FastIA" role="doc-biblioref">Spinnato et al. 2024</a>)</span>.</p>
+<p>Our method differs by directly optimizing in input space with a soft-DTW term that explicitly aligns the CFE with real target-class samples — no autoencoder, no symbolic representation, fully differentiable.</p>
+</section>
+<section id="method" class="level2">
+<h2 class="anchored" data-anchor-id="method">Method</h2>
+<p>We seek a counterfactual <span class="math inline">\(X'\)</span> for a time series <span class="math inline">\(X\)</span> with predicted class <span class="math inline">\(\hat{y} = f(X)\)</span>, targeting <span class="math inline">\(y_{\text{target}} \neq \hat{y}\)</span>. The optimization objective is:</p>
+<p><span class="math display">\[
+\mathcal{L}_{\text{CF}} = \mathcal{L}_{\text{prox}} + \mathcal{L}_{\text{sparse}} + \lambda \cdot (\mathcal{L}_{\text{valid}} + \mathcal{L}_{\text{DTW}}),
+\]</span></p>
+<p>where <span class="math inline">\(\lambda\)</span> controls the trade-off between plausibility/validity and proximity/sparsity. The individual terms are:</p>
+<p><span class="math display">\[
+\mathcal{L}_{\text{prox}} = \tfrac{1}{dT}\|X' - X\|_2^2, \qquad
+\mathcal{L}_{\text{sparse}} = \tfrac{1}{dT}\|X' - X\|_1,
+\]</span></p>
+<p><span class="math display">\[
+\mathcal{L}_{\text{valid}} = \max\!\left(0,\, \tau - p_f(y_{\text{target}} \mid X')\right),
+\]</span></p>
+<p><span class="math display">\[
+\mathcal{L}_{\text{DTW}} = \frac{1}{k}\sum_{Y \in \mathcal{N}_k(X,\, y_{\text{target}})} \text{DTW}^\gamma(X', Y).
+\]</span></p>
+<p><strong>Soft-DTW</strong> <span class="citation" data-cites="Cuturi2017SoftDTW">(<a href="#ref-Cuturi2017SoftDTW" role="doc-biblioref">Cuturi and Blondel 2017</a>)</span> replaces the hard minimum in standard DTW with a smooth approximation parameterized by <span class="math inline">\(\gamma &gt; 0\)</span>, making the alignment cost differentiable with respect to <span class="math inline">\(X'\)</span>. As <span class="math inline">\(\gamma \to 0^+\)</span> it recovers standard DTW. The plausibility term <span class="math inline">\(\mathcal{L}_{\text{DTW}}\)</span> pulls <span class="math inline">\(X'\)</span> toward the <span class="math inline">\(k\)</span> nearest target-class training examples, encouraging the counterfactual to adopt realistic temporal structure rather than an adversarial perturbation. We optimize <span class="math inline">\(X'\)</span> by gradient descent for a fixed number of steps with classifier weights frozen. Defaults: <span class="math inline">\(\lambda = 1\)</span>, <span class="math inline">\(k = 10\)</span>, <span class="math inline">\(\gamma = 1\)</span>.</p>
+</section>
+<section id="experiments-and-results" class="level2">
+<h2 class="anchored" data-anchor-id="experiments-and-results">Experiments and Results</h2>
+<p>Experiments use eight UCR/UEA datasets <span class="citation" data-cites="Dau2019UCR">(<a href="#ref-Dau2019UCR" role="doc-biblioref">Dau et al. 2019</a>)</span> spanning univariate and multivariate time series. We compare against Glacier <span class="citation" data-cites="Wang2024">(<a href="#ref-Wang2024" role="doc-biblioref">Wang et al. 2024</a>)</span> (evaluated on univariate only) and M-CELS <span class="citation" data-cites="li2024mcels">(<a href="#ref-li2024mcels" role="doc-biblioref">Li et al. 2024</a>)</span>, using the settings recommended by their authors. The classifier is a three-block 1D CNN trained with Optuna <span class="citation" data-cites="ozaki2025optunahub">(<a href="#ref-ozaki2025optunahub" role="doc-biblioref">Ozaki et al. 2025</a>)</span>.</p>
+<p><strong>Metrics:</strong> Validity (<span class="math inline">\(\text{Val}\uparrow\)</span>), <span class="math inline">\(L_1\)</span> and <span class="math inline">\(L_2\)</span> distance (<span class="math inline">\(\downarrow\)</span>), average DTW distance to 10 nearest target-class neighbors (<span class="math inline">\(\text{DTW}\downarrow\)</span>), and Isolation Forest Score (<span class="math inline">\(\uparrow\)</span>).</p>
+<table class="table-striped caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Dataset</th>
+<th>Method</th>
+<th><span class="math inline">\(\text{Val}\uparrow\)</span></th>
+<th><span class="math inline">\(L_1\downarrow\)</span></th>
+<th><span class="math inline">\(L_2\downarrow\)</span></th>
+<th><span class="math inline">\(\text{DTW}\downarrow\)</span></th>
+<th>Iso Forest<span class="math inline">\(\uparrow\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>CBF</strong></td>
+<td><strong>Ours</strong></td>
+<td><strong>1.000</strong></td>
+<td>9.871</td>
+<td>1.071</td>
+<td><strong>0.194</strong></td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Glacier</td>
+<td>0.360</td>
+<td>4.062</td>
+<td>0.540</td>
+<td>1.415</td>
+<td>0.987</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>M-CELS</td>
+<td>0.226</td>
+<td><strong>1.500</strong></td>
+<td><strong>0.486</strong></td>
+<td>2.402</td>
+<td>0.984</td>
+</tr>
+<tr class="even">
+<td><strong>TwoLeadECG</strong></td>
+<td><strong>Ours</strong></td>
+<td><strong>1.000</strong></td>
+<td>1.446</td>
+<td>0.214</td>
+<td><strong>0.016</strong></td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Glacier</td>
+<td>0.233</td>
+<td>0.484</td>
+<td><strong>0.115</strong></td>
+<td>0.064</td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>M-CELS</td>
+<td>0.970</td>
+<td><strong>0.245</strong></td>
+<td>0.119</td>
+<td>0.302</td>
+<td>0.879</td>
+</tr>
+<tr class="odd">
+<td><strong>GunPoint</strong></td>
+<td><strong>Ours</strong></td>
+<td><strong>0.975</strong></td>
+<td>4.478</td>
+<td>0.491</td>
+<td><strong>0.155</strong></td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Glacier</td>
+<td>0.000</td>
+<td>0.639</td>
+<td>0.170</td>
+<td>0.436</td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>M-CELS</td>
+<td>0.425</td>
+<td><strong>0.129</strong></td>
+<td><strong>0.074</strong></td>
+<td>2.317</td>
+<td>0.925</td>
+</tr>
+<tr class="even">
+<td><strong>Earthquakes</strong></td>
+<td><strong>Ours</strong></td>
+<td><strong>1.000</strong></td>
+<td>48.985</td>
+<td>2.441</td>
+<td><strong>0.775</strong></td>
+<td>0.924</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Glacier</td>
+<td>0.000</td>
+<td>8.528</td>
+<td><strong>0.661</strong></td>
+<td>1.907</td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>M-CELS</td>
+<td>0.174</td>
+<td><strong>6.765</strong></td>
+<td>1.167</td>
+<td>0.288</td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>Coffee</strong></td>
+<td><strong>Ours</strong></td>
+<td><strong>1.000</strong></td>
+<td>5.979</td>
+<td>0.489</td>
+<td><strong>0.064</strong></td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Glacier</td>
+<td>0.455</td>
+<td>9.182</td>
+<td>0.795</td>
+<td>1.024</td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>M-CELS</td>
+<td><strong>1.000</strong></td>
+<td><strong>0.527</strong></td>
+<td><strong>0.183</strong></td>
+<td>0.423</td>
+<td>0.636</td>
+</tr>
+<tr class="even">
+<td><strong>ItalyPowerDemand</strong></td>
+<td><strong>Ours</strong></td>
+<td><strong>1.000</strong></td>
+<td>0.869</td>
+<td>0.222</td>
+<td><strong>0.015</strong></td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Glacier</td>
+<td>0.023</td>
+<td>0.307</td>
+<td>0.107</td>
+<td>0.054</td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>M-CELS</td>
+<td>0.466</td>
+<td><strong>0.178</strong></td>
+<td><strong>0.091</strong></td>
+<td>0.369</td>
+<td>0.831</td>
+</tr>
+<tr class="odd">
+<td><strong>Cricket</strong></td>
+<td><strong>Ours</strong></td>
+<td><strong>1.000</strong></td>
+<td>475.900</td>
+<td>12.210</td>
+<td><strong>0.810</strong></td>
+<td><strong>0.972</strong></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Glacier</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>M-CELS</td>
+<td>0.194</td>
+<td><strong>54.403</strong></td>
+<td><strong>2.636</strong></td>
+<td>65.924</td>
+<td>0.888</td>
+</tr>
+<tr class="even">
+<td><strong>Epilepsy</strong></td>
+<td><strong>Ours</strong></td>
+<td><strong>1.000</strong></td>
+<td>68.130</td>
+<td>3.138</td>
+<td><strong>3.445</strong></td>
+<td><strong>1.000</strong></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Glacier</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>M-CELS</td>
+<td>0.272</td>
+<td><strong>14.807</strong></td>
+<td><strong>1.623</strong></td>
+<td>19.213</td>
+<td><strong>1.000</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Validity.</strong> Our method achieves perfect or near-perfect validity on all datasets. Baselines fall well short: Glacier scores 0.360 on CBF and 0.023 on ItalyPowerDemand; M-CELS reaches at most 0.970.</p>
+<p><strong>Plausibility.</strong> We achieve the best DTW score on every dataset, often by an order of magnitude — e.g., 0.016 vs.&nbsp;0.302 (M-CELS) on TwoLeadECG, and 0.810 vs.&nbsp;65.924 on Cricket. Isolation Forest Scores are perfect on six datasets and competitive on the remaining two.</p>
+<p><strong>Proximity / sparsity.</strong> Our <span class="math inline">\(L_1\)</span> and <span class="math inline">\(L_2\)</span> values are consistently higher than the baselines, reflecting the inherent trade-off: enforcing temporal plausibility requires larger, more structured modifications than simply minimizing perturbation magnitude.</p>
+<section id="qualitative-results" class="level3">
+<h3 class="anchored" data-anchor-id="qualitative-results">Qualitative Results</h3>
+<p>The figures below compare counterfactuals on TwoLeadECG and CBF. On ECG, both our method and M-CELS capture the prominent target-class peak; Glacier produces subtle changes that miss it. On CBF — three geometrically distinct classes — our method produces a CFE that clearly adopts the target shape, while Glacier and M-CELS generate perturbations that resemble adversarial noise.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/twolead_ecg.svg" class="img-fluid figure-img" style="width:99.0%"></p>
+<figcaption>CFE comparison on TwoLeadECG.</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/cbf.svg" class="img-fluid figure-img" style="width:99.0%"></p>
+<figcaption>CFE comparison on CBF.</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<p>Soft-DTW has quadratic complexity in sequence length, making the approach expensive for very long series. The <span class="math inline">\(k\)</span>-NN plausibility term also assumes the target class has a consistent temporal structure; in highly multi-modal classes, alignment with a local neighborhood may not produce globally coherent counterfactuals.</p>
+</section>
+<section id="conclusions" class="level2">
+<h2 class="anchored" data-anchor-id="conclusions">Conclusions</h2>
+<p>We introduced a gradient-based method for generating plausible time series CFEs via soft-DTW alignment with target-class nearest neighbors. The method achieves near-perfect validity and substantially outperforms existing approaches in plausibility, at the cost of larger perturbations. This confirms that meaningful temporal realism requires larger, more structured changes than purely proximity-minimizing methods admit. Future work will explore generative density models to better handle multi-modal target classes.</p>
+<hr>
+<p><em>Supported by the National Science Centre (Poland), Grant No.&nbsp;2024/55/B/ST6/02100.</em></p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-Ates2021" class="csl-entry" role="listitem">
+Ates, Emre, Burak Aksar, Vitus J Leung, and Ayse K Coskun. 2021. <span>“Counterfactual Explanations for Multivariate Time Series.”</span> <em>Proceedings of the IEEE International Conference on Applied Artificial Intelligence (ICAPAI)</em>.
+</div>
+<div id="ref-Cuturi2017SoftDTW" class="csl-entry" role="listitem">
+Cuturi, Marco, and Mathieu Blondel. 2017. <span>“Soft-<span>DTW</span>: A Differentiable Loss Function for Time-Series.”</span> <em>Proceedings of the International Conference on Machine Learning (ICML)</em> 70: 894–903.
+</div>
+<div id="ref-Dau2019UCR" class="csl-entry" role="listitem">
+Dau, Hoang Anh, Anthony Bagnall, Kaveh Kamgar, et al. 2019. <span>“The <span>UCR</span> Time Series Archive.”</span> <em><span>IEEE/CAA</span> Journal of Automatica Sinica</em> 6 (6): 1293–305.
+</div>
+<div id="ref-Delaney2021Native" class="csl-entry" role="listitem">
+Delaney, Eoin, Derek Greene, and Mark T Keane. 2021. <span>“Instance-Based Counterfactual Explanations for Time Series Classification.”</span> <em>Proceedings of the International Conference on Case-Based Reasoning (ICCBR)</em>.
+</div>
+<div id="ref-Dempster2020Rocket" class="csl-entry" role="listitem">
+Dempster, Angus, François Petitjean, and Geoffrey I Webb. 2020. <span>“<span>ROCKET</span>: Exceptionally Fast and Accurate Time Series Classification Using Random Convolutional Kernels.”</span> <em>Data Mining and Knowledge Discovery</em> 34: 1454–95.
+</div>
+<div id="ref-Fawaz2019InceptionTime" class="csl-entry" role="listitem">
+Fawaz, Hassan Ismail, Benjamin Lucas, Germain Forestier, et al. 2020. <span>“<span>InceptionTime</span>: Finding <span>AlexNet</span> for Time Series Classification.”</span> <em>Data Mining and Knowledge Discovery</em> 34: 1936–62.
+</div>
+<div id="ref-guidotti2024counterfactual" class="csl-entry" role="listitem">
+Guidotti, Riccardo. 2024. <span>“Counterfactual Explanations and How to Find Them: Literature Review and Benchmarking.”</span> <em>Data Mining and Knowledge Discovery</em> 38: 2770–824.
+</div>
+<div id="ref-Hllig2022" class="csl-entry" role="listitem">
+Höllig, Jacqueline, Cedric Kulbach, and Steffen Thoma. 2022. <span>“<span>TSEvo</span>: Evolutionary Counterfactual Explanations for Time Series Classification.”</span> <em>Proceedings of the IEEE International Conference on Machine Learning and Applications (ICMLA)</em>.
+</div>
+<div id="ref-Jurgovsky2018SequenceCFA" class="csl-entry" role="listitem">
+Jurgovsky, Johannes, Michael Granitzer, Konstantin Ziegler, et al. 2018. <span>“Sequence Classification for Credit-Card Fraud Detection.”</span> <em>Expert Systems with Applications</em> 100: 234–45.
+</div>
+<div id="ref-li2023cels" class="csl-entry" role="listitem">
+Li, Zhengping, Ling Huang, Chang-Dong Wang, and Hongyang Chao. 2023. <span>“<span>CELS</span>: Counterfactual Explanation with Latent Search for Time Series Classification.”</span> <em>Proceedings of the IEEE International Conference on Data Mining (ICDM)</em>.
+</div>
+<div id="ref-li2024mcels" class="csl-entry" role="listitem">
+Li, Zhengping, Ling Huang, Chang-Dong Wang, and Hongyang Chao. 2024. <span>“<span>M-CELS</span>: Counterfactual Explanation for Multivariate Time Series Classification.”</span> <em>Proceedings of the ACM Web Conference (WWW)</em>.
+</div>
+<div id="ref-Markovic2023TimeseriesADA" class="csl-entry" role="listitem">
+Markovic, Ranka, Christian Koch, and Markus König. 2023. <span>“Time-Series Anomaly Detection for Predictive Maintenance in Industrial Systems.”</span> <em>Sensors</em> 23.
+</div>
+<div id="ref-ozaki2025optunahub" class="csl-entry" role="listitem">
+Ozaki, Yoshihiko, Shuhei Watanabe, Masashi Imamura, Nobuhito Yoshida, Hiroyuki Takemoto, and Takahiro Kamihigashi. 2025. <em><span>OptunaHub</span>: Sharing and Discovering User-Defined Modules for Optuna</em>. arXiv preprint arXiv:2501.05057.
+</div>
+<div id="ref-Pudowski2025" class="csl-entry" role="listitem">
+Pudowski, Julian, Francesco Spinnato, and Riccardo Guidotti. 2025. <span>“<span>MASCOTS</span>: Model-Agnostic Symbolic Counterfactuals for Time Series.”</span> <em>Proceedings of the European Conference on Machine Learning and Principles and Practice of Knowledge Discovery in Databases (ECML PKDD)</em>.
+</div>
+<div id="ref-Refoyo2023" class="csl-entry" role="listitem">
+Refoyo, Miguel, and Oscar Luaces. 2023. <span>“<span>Sub-SpaCE</span>: Subsequence-Based Sparse Counterfactual Explanations for Time Series Classification.”</span> <em>Proceedings of the International Conference on Neural Information Processing (ICONIP)</em>.
+</div>
+<div id="ref-Spinnato2024FastIA" class="csl-entry" role="listitem">
+Spinnato, Francesco, Riccardo Guidotti, Anna Monreale, and Mirco Nanni. 2024. <span>“Fast, Interpretable and Deterministic Time Series Classification with a Bag of Receptive Fields.”</span> <em>Proceedings of the International Joint Conference on Neural Networks (IJCNN)</em>.
+</div>
+<div id="ref-Ullah2020ClassificationOA" class="csl-entry" role="listitem">
+Ullah, Amin, Syed Muhammad Anwar, Muhammad Bilal, and Raja Majid Mehmood. 2020. <span>“Classification of Arrhythmia by Using Deep Learning with 2-d <span>ECG</span> Spectral Image Representation.”</span> <em>Remote Sensing</em> 12 (10): 1685.
+</div>
+<div id="ref-Wachter2017CounterfactualEW" class="csl-entry" role="listitem">
+Wachter, Sandra, Brent Mittelstadt, and Chris Russell. 2017. <span>“Counterfactual Explanations Without Opening the Black Box: Automated Decisions and the <span>GDPR</span>.”</span> <em>Harvard Journal of Law &amp; Technology</em> 31 (2): 841–87.
+</div>
+<div id="ref-Wang2024" class="csl-entry" role="listitem">
+Wang, Zhendong, Ioanna Miliou, Isak Samsten, and Panagiotis Papapetrou. 2024. <span>“Learning Time Series Counterfactual Explanations: Glacier.”</span> <em>Proceedings of the SIAM International Conference on Data Mining (SDM)</em>.
+</div>
+<div id="ref-Wang2021" class="csl-entry" role="listitem">
+Wang, Zhendong, Isak Samsten, and Panagiotis Papapetrou. 2021. <span>“Counterfactual Explanations for Predictive Business Process Monitoring.”</span> <em>Proceedings of the International Conference on Advanced Information Systems Engineering (CAiSE)</em>.
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<script src="index_files/libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

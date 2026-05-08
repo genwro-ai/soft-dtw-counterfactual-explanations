@@ -1,0 +1,43 @@
+<header class="paper-hero">
+  <div class="hero-topbar">
+    <a class="hero-logo" href="https://genwro.ai" target="_blank" rel="noopener">
+      <img src="assets/genwro_logo_light.svg" alt="genwro.AI">
+    </a>
+  </div>
+
+  <div class="hero-content">
+    <h1 class="paper-title">$title$</h1>
+
+    $if(by-author)$
+    <div class="paper-authors">
+      $for(by-author)$<span class="paper-author">$if(it.url)$<a href="$it.url$" target="_blank" rel="noopener">$endif$$it.name.literal$$if(it.affiliations)$<sup>$for(it.affiliations)$$it.number$$sep$,$endfor$</sup>$endif$$if(it.url)$</a>$endif$</span>$sep$<span class="author-sep"> · </span>$endfor$
+    </div>
+    $endif$
+
+    $if(paper-affiliations)$
+    <div class="paper-affiliations">$paper-affiliations$</div>
+    $else$
+    $if(by-affiliation)$
+    <div class="paper-affiliations">
+      $for(by-affiliation)$<sup>$it.number$</sup> $it.name$$sep$ &nbsp;·&nbsp; $endfor$
+    </div>
+    $endif$
+    $endif$
+
+    $if(paper-venue)$
+    <div class="paper-venue">$paper-venue$</div>
+    $endif$
+
+    <div class="paper-links">
+      $if(link-paper)$<a href="$link-paper$" class="paper-btn paper-btn-primary" target="_blank" rel="noopener">📄 Paper</a>$endif$
+      $if(link-code)$<a href="$link-code$" class="paper-btn paper-btn-secondary" target="_blank" rel="noopener">💻 Code</a>$endif$
+      $if(link-arxiv)$<a href="$link-arxiv$" class="paper-btn paper-btn-secondary" target="_blank" rel="noopener">📦 arXiv</a>$endif$
+      $if(link-demo)$<a href="$link-demo$" class="paper-btn paper-btn-secondary" target="_blank" rel="noopener">🎮 Demo</a>$endif$
+      $if(link-video)$<a href="$link-video$" class="paper-btn paper-btn-secondary" target="_blank" rel="noopener">🎬 Video</a>$endif$
+      $if(link-poster)$<a href="$link-poster$" class="paper-btn paper-btn-secondary" target="_blank" rel="noopener">🪧 Poster</a>$endif$
+      $if(link-slides)$<a href="$link-slides$" class="paper-btn paper-btn-secondary" target="_blank" rel="noopener">📊 Slides</a>$endif$
+      $if(link-dataset)$<a href="$link-dataset$" class="paper-btn paper-btn-secondary" target="_blank" rel="noopener">🗄️ Dataset</a>$endif$
+      $if(link-models)$<a href="$link-models$" class="paper-btn paper-btn-secondary" target="_blank" rel="noopener">🤗 Models</a>$endif$
+    </div>
+  </div>
+</header>

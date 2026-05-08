@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#f4f4f4" stroke="#ddd" stroke-width="2"/>
+  <line x1="0" y1="0" x2="800" y2="400" stroke="#ddd" stroke-width="1"/>
+  <line x1="800" y1="0" x2="0" y2="400" stroke="#ddd" stroke-width="1"/>
+  <rect x="280" y="140" width="240" height="120" rx="6" fill="#e8e8e8" stroke="#ccc" stroke-width="1"/>
+  <text x="400" y="196" font-family="sans-serif" font-size="16" fill="#aaa" text-anchor="middle">example figure</text>
+  <text x="400" y="218" font-family="sans-serif" font-size="12" fill="#bbb" text-anchor="middle">replace with figures/your_figure.png</text>
+</svg>

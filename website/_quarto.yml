@@ -1,0 +1,13 @@
+project:
+  type: default
+  output-dir: _site
+
+format:
+  html:
+    theme: [default, custom.scss]
+    katex: true
+    toc: false
+    smooth-scroll: true
+    page-layout: full
+    template-partials:
+      - _partials/title-block.html
