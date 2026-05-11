@@ -13,7 +13,10 @@ author:
       - name: "Wrocław University of Science and Technology"
       - name: "Tooploox"
 
+paper-venue: "ACIIDS 2026"
+
 link-code: "https://github.com/genwro-ai/soft-dtw-counterfactual-explantions"
+link-arxiv: "https://arxiv.org/abs/2603.08349"
 
 bibliography: references.bib
 ---
@@ -21,26 +24,6 @@ bibliography: references.bib
 ::: {.abstract}
 We present a method for generating plausible counterfactual explanations (CFEs) for time series classification via gradient-based optimization in input space. Plausibility is enforced by aligning the generated CFE with $k$-nearest neighbors from the target class using soft-DTW — a differentiable relaxation of dynamic time warping. The optimization objective balances validity, proximity, sparsity, and the novel soft-DTW plausibility term. Across eight datasets, our method achieves perfect or near-perfect validity while outperforming baselines in distributional alignment with the target class by up to an order of magnitude in DTW distance.
 :::
-
-## Introduction
-
-Counterfactual explanations (CFEs) answer the question: *what minimal change to the input would alter the model's prediction?* [@guidotti2024counterfactual; @Wachter2017CounterfactualEW]. They are particularly valuable for time series classifiers used in healthcare [@Ullah2020ClassificationOA], finance [@Jurgovsky2018SequenceCFA], and industrial systems [@Markovic2023TimeseriesADA], where architectures such as ROCKET [@Dempster2020Rocket] and InceptionTime [@Fawaz2019InceptionTime] achieve high accuracy but remain opaque.
-
-A valid CFE for time series must do more than flip the classifier's prediction — it must preserve realistic temporal structure. Existing methods enforce plausibility either indirectly through autoencoder reconstruction [@Wang2024; @Wang2021] or by substituting segments from real training examples [@Ates2021; @Delaney2021Native], neither of which provides an explicit, differentiable alignment with target-class temporal patterns.
-
-We address this by incorporating soft-DTW distance to target-class nearest neighbors directly into the optimization objective, enabling smooth gradient-based optimization that produces CFEs aligned with real data.
-
-**Contributions:**
-
-- A gradient-based CFE method that enforces plausibility through soft-DTW alignment with target-class neighbors;
-- Evaluation across eight UCR/UEA datasets on validity, proximity, sparsity, and plausibility (DTW distance and Isolation Forest Score);
-- Qualitative analysis showing that competing methods produce adversarial-looking perturbations where ours preserves temporal realism.
-
-## Related Work
-
-Substitution-based methods (CoMTE [@Ates2021], Native Guide [@Delaney2021Native]) replace segments with training examples — plausible by construction, but constrained to observed patterns and prone to discontinuities. Evolutionary approaches (TSEvo [@Hllig2022], Sub-SpaCE [@Refoyo2023]) search broadly but lack differentiability. Autoencoder-based methods (LatentCF++ [@Wang2021], Glacier [@Wang2024]) optimize in latent space and use reconstruction error as a plausibility proxy. Saliency-guided methods (CELS [@li2023cels], M-CELS [@li2024mcels]) perturb the most influential time steps toward a nearest unlike neighbor. MASCOTS [@Pudowski2025] operates in a symbolic feature space based on the BoRF representation [@Spinnato2024FastIA].
-
-Our method differs by directly optimizing in input space with a soft-DTW term that explicitly aligns the CFE with real target-class samples — no autoencoder, no symbolic representation, fully differentiable.
 
 ## Method
 
@@ -50,28 +33,33 @@ $$
 \mathcal{L}_{\text{CF}} = \mathcal{L}_{\text{prox}} + \mathcal{L}_{\text{sparse}} + \lambda \cdot (\mathcal{L}_{\text{valid}} + \mathcal{L}_{\text{DTW}}),
 $$
 
-where $\lambda$ controls the trade-off between plausibility/validity and proximity/sparsity. The individual terms are:
-
 $$
 \mathcal{L}_{\text{prox}} = \tfrac{1}{dT}\|X' - X\|_2^2, \qquad
 \mathcal{L}_{\text{sparse}} = \tfrac{1}{dT}\|X' - X\|_1,
 $$
 
 $$
-\mathcal{L}_{\text{valid}} = \max\!\left(0,\, \tau - p_f(y_{\text{target}} \mid X')\right),
-$$
-
-$$
+\mathcal{L}_{\text{valid}} = \max\!\left(0,\, \tau - p_f(y_{\text{target}} \mid X')\right), \qquad
 \mathcal{L}_{\text{DTW}} = \frac{1}{k}\sum_{Y \in \mathcal{N}_k(X,\, y_{\text{target}})} \text{DTW}^\gamma(X', Y).
 $$
 
-**Soft-DTW** [@Cuturi2017SoftDTW] replaces the hard minimum in standard DTW with a smooth approximation parameterized by $\gamma > 0$, making the alignment cost differentiable with respect to $X'$. As $\gamma \to 0^+$ it recovers standard DTW. The plausibility term $\mathcal{L}_{\text{DTW}}$ pulls $X'$ toward the $k$ nearest target-class training examples, encouraging the counterfactual to adopt realistic temporal structure rather than an adversarial perturbation. We optimize $X'$ by gradient descent for a fixed number of steps with classifier weights frozen. Defaults: $\lambda = 1$, $k = 10$, $\gamma = 1$.
+**Soft-DTW** [@Cuturi2017SoftDTW] replaces the hard minimum in standard DTW with a smooth approximation parameterized by $\gamma > 0$, making the alignment cost differentiable with respect to $X'$. The plausibility term $\mathcal{L}_{\text{DTW}}$ pulls $X'$ toward the $k$ nearest target-class training examples, encouraging realistic temporal structure rather than adversarial perturbations. We optimize $X'$ by gradient descent with classifier weights frozen. Defaults: $\lambda = 1$, $k = 10$, $\gamma = 1$.
 
-## Experiments and Results
+## Qualitative Results
 
-Experiments use eight UCR/UEA datasets [@Dau2019UCR] spanning univariate and multivariate time series. We compare against Glacier [@Wang2024] (evaluated on univariate only) and M-CELS [@li2024mcels], using the settings recommended by their authors. The classifier is a three-block 1D CNN trained with Optuna [@ozaki2025optunahub].
+The figures below compare counterfactuals produced by our method, Glacier [@Wang2024], and M-CELS [@li2024mcels].
 
-**Metrics:** Validity ($\text{Val}\uparrow$), $L_1$ and $L_2$ distance ($\downarrow$), average DTW distance to 10 nearest target-class neighbors ($\text{DTW}\downarrow$), and Isolation Forest Score ($\uparrow$).
+On **TwoLeadECG**, both our method and M-CELS capture the prominent target-class peak; Glacier produces subtle changes that miss it entirely.
+
+![](assets/twolead_ecg.svg){width=99% fig-align="center"}
+
+The contrast is sharper on **CBF** — three geometrically distinct classes (Cylinder, Bell, Funnel). Our method produces a CFE that clearly adopts the target shape. Glacier and M-CELS generate perturbations that resemble adversarial noise rather than meaningful class transformations.
+
+![](assets/cbf.svg){width=99% fig-align="center"}
+
+## Quantitative Results
+
+Evaluated on eight UCR/UEA datasets [@Dau2019UCR] against Glacier [@Wang2024] (univariate only) and M-CELS [@li2024mcels]. **Metrics:** Validity ($\text{Val}\uparrow$), $L_1$/$L_2$ distance ($\downarrow$), average DTW to 10 nearest target-class neighbors ($\downarrow$), Isolation Forest Score ($\uparrow$).
 
 | Dataset | Method | $\text{Val}\uparrow$ | $L_1\downarrow$ | $L_2\downarrow$ | $\text{DTW}\downarrow$ | Iso Forest$\uparrow$ |
 |---|---|---|---|---|---|---|
@@ -102,27 +90,11 @@ Experiments use eight UCR/UEA datasets [@Dau2019UCR] spanning univariate and mul
 
 : {.striped}
 
-**Validity.** Our method achieves perfect or near-perfect validity on all datasets. Baselines fall well short: Glacier scores 0.360 on CBF and 0.023 on ItalyPowerDemand; M-CELS reaches at most 0.970.
-
-**Plausibility.** We achieve the best DTW score on every dataset, often by an order of magnitude — e.g., 0.016 vs. 0.302 (M-CELS) on TwoLeadECG, and 0.810 vs. 65.924 on Cricket. Isolation Forest Scores are perfect on six datasets and competitive on the remaining two.
-
-**Proximity / sparsity.** Our $L_1$ and $L_2$ values are consistently higher than the baselines, reflecting the inherent trade-off: enforcing temporal plausibility requires larger, more structured modifications than simply minimizing perturbation magnitude.
-
-### Qualitative Results
-
-The figures below compare counterfactuals on TwoLeadECG and CBF. On ECG, both our method and M-CELS capture the prominent target-class peak; Glacier produces subtle changes that miss it. On CBF — three geometrically distinct classes — our method produces a CFE that clearly adopts the target shape, while Glacier and M-CELS generate perturbations that resemble adversarial noise.
-
-![CFE comparison on TwoLeadECG.](assets/twolead_ecg.svg){width=99% fig-align="center"}
-
-![CFE comparison on CBF.](assets/cbf.svg){width=99% fig-align="center"}
-
-## Limitations
-
-Soft-DTW has quadratic complexity in sequence length, making the approach expensive for very long series. The $k$-NN plausibility term also assumes the target class has a consistent temporal structure; in highly multi-modal classes, alignment with a local neighborhood may not produce globally coherent counterfactuals.
+Our method achieves perfect or near-perfect validity on all datasets and the best DTW plausibility score everywhere — often by an order of magnitude (e.g. 0.016 vs. 0.302 on TwoLeadECG; 0.810 vs. 65.924 on Cricket). The higher $L_1$/$L_2$ values reflect an inherent trade-off: enforcing temporal realism requires larger, more structured modifications than simply minimizing perturbation magnitude.
 
 ## Conclusions
 
-We introduced a gradient-based method for generating plausible time series CFEs via soft-DTW alignment with target-class nearest neighbors. The method achieves near-perfect validity and substantially outperforms existing approaches in plausibility, at the cost of larger perturbations. This confirms that meaningful temporal realism requires larger, more structured changes than purely proximity-minimizing methods admit. Future work will explore generative density models to better handle multi-modal target classes.
+Explicit soft-DTW alignment with target-class neighbors is a simple and effective mechanism for producing plausible time series counterfactuals. It delivers near-perfect validity and substantially better distributional alignment than existing methods, at the cost of larger perturbations — confirming that meaningful temporal realism requires more structured changes than proximity-minimizing methods admit.
 
 ---
 
